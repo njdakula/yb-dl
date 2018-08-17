@@ -1,2 +1,2 @@
-Git is a version crontrol system.
+Git is a distributed version crontrol system.
 Git is free software.
