@@ -10,13 +10,15 @@ rm -rf list*.txt
 for list in $(cat youtube.list | awk '{print $2}')
 do
 	title=`cat youtube.list | grep "$list" | awk '{print $1}'`
+	downcount=`cat youtube.list | grep "$list" | awk '{print $3}'`
+	fileformat=`cat youtube.list | grep "$list" | awk '{print $4}'`
 	rm -rf list$list.txt
 	for i in `curl -s "https://www.youtube.com/playlist?list=$list" | grep -Po "/watch.*?$list" | sed -r "s#&.*##" | uniq`;
 		do
-			echo -e "$title""\t""https://www.youtube.com$i" >> list$list.txt
+			echo -e "$title""\t""https://www.youtube.com$i""\t""$fileformat" >> list$list.txt
 		done
 # want to download newest 6 video of every list-id
-	sed -i '7,$d' list$list.txt
+	sed -i ''"$downcount"',$d' list$list.txt
 	cat list$list.txt >> list.txt 
 done
 echo "list complate!"
@@ -37,7 +39,8 @@ for downurl in $(cat list.txt | awk '{print $2}')
 do
         filename=`date +%y-%m-%d-%T`"-"`youtube-dl -e $downurl | sed 's/ //g' | sed 's/[/]/-/g' | awk '{print substr($0,1,30)}'`"-"`echo $downurl |awk '{print substr($0,33)}'`".mp4"
         echo $filename
-        youtube-dl -f 22 $downurl -o $filename
+	downfileformat=`cat list.txt | grep "$downurl" | awk '{print $3}'`	
+        youtube-dl -f $downfileformat $downurl -o $filename
 done
 # copy downloaded key to file:down and file:down-tmp
 ls *.mp4 | sed 's/ //g' | awk '{print substr($0,length($0)-14)}' | awk '{print substr($0,1,11)}' | uniq >> ./down-tmp
